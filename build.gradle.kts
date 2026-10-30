@@ -143,7 +143,6 @@ tasks.register<Test>("architectureTest") {
   shouldRunAfter(tasks.named("test"))
 }
 
-
 // Integration tests run the real mdbook binary. They depend on mdbookDownload and use the mdbook it downloads, rather
 // than whichever mdbook is installed, so they run against the same version everywhere.
 // They are NOT part of `check`, so that `check` only needs a JDK. The integration tests also need network access (to
