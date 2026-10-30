@@ -1,0 +1,144 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_DISTRIBUTION: temurin
+  JAVA_VERSION_FILE: .java-version
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version-file: ${{ env.JAVA_VERSION_FILE }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Check formatting (ktfmt)
+        run: ./gradlew ktfmtCheck
+
+      - name: Static analysis (Detekt)
+        run: ./gradlew detekt
+
+      - name: Publish Detekt SARIF report
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: build/reports/detekt/detekt.sarif
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version-file: ${{ env.JAVA_VERSION_FILE }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Run unit tests
+        run: ./gradlew test
+
+      - name: Run architecture tests (ArchUnit)
+        run: ./gradlew architectureTest
+
+      - name: Code coverage (Kover)
+        run: ./gradlew koverVerify koverXmlReport
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            build/test-results/test/**/*.xml
+            build/test-results/architectureTest/**/*.xml
+
+      - name: Publish Kover coverage report
+        if: always()
+        uses: mi-kas/kover-report@v2
+        with:
+          path: build/reports/kover/report.xml
+          title: Code Coverage
+          update-comment: true
+          min-coverage-overall: 85
+          min-coverage-changed-files: 80
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version-file: ${{ env.JAVA_VERSION_FILE }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The version of mdBook is pinned by the mdbookDownload task, which saves the binary to build/bin
+      - name: Download mdBook
+        run: ./gradlew mdbookDownload
+
+      - name: Add mdBook to the PATH
+        run: echo "$GITHUB_WORKSPACE/build/bin" >> "$GITHUB_PATH"
+
+      - name: Run integration tests
+        run: ./gradlew integrationTest
+
+      - name: Publish integration test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Integration Test Results
+          files: build/test-results/integrationTest/**/*.xml
+
+  build:
+    name: Build
+    needs: [ lint, test, integration-test ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version-file: ${{ env.JAVA_VERSION_FILE }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Full build
+        run: ./gradlew build -x test -x architectureTest -x ktfmtCheck -x detekt -x koverVerify

@@ -1,0 +1,28 @@
+# EditorConfig for Kotlin Gradle Plugin Project
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Kotlin files
+[*.{kt,kts}]
+# Indentation
+indent_style = space
+indent_size = 4
+
+# Max line length (ktfmt default is 100, you can adjust to 120)
+max_line_length = 120
+
+# Continuation indent for function parameters, call chains, etc.
+continuation_indent_size = 4
+
+# Disable tabs
+indent_style = space
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
