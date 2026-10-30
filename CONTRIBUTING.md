@@ -52,7 +52,7 @@ Once you've submitted your pull request, it will be reviewed by the maintainers.
 
 ## Additional Notes
 
-- **Tests**: If applicable, write tests to accompany your changes. Unit tests (`./gradlew test`) mock mdbook, while integration tests (`./gradlew integrationTest`) run the real binary. See the [Development](./README.md#development) section of the README, including how to download `mdbook` with `./gradlew mdbookDownload`.
+- **Tests**: If applicable, write tests to accompany your changes. Unit tests (`./gradlew test`) mock mdbook, while integration tests (`./gradlew integrationTest`) run the real binary, which the build downloads for you. They need a Rust toolchain on the `PATH`. See the [Development](./README.md#development) section of the README.
 - **Documentation**: Update documentation to reflect any significant changes.
 - **Consistency**: Ensure your code follows the project’s style guide.
 

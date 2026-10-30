@@ -16,7 +16,7 @@
 - [ ] I have read the [Contributing Guidelines](../CONTRIBUTING.md)
 - [ ] My code follows the existing code style (`./gradlew ktfmtCheck`)
 - [ ] I have added or updated tests for my changes
-- [ ] All tests pass locally (`./gradlew test architectureTest`, and `./gradlew integrationTest` with `mdbook` on the `PATH`)
+- [ ] All tests pass locally (`./gradlew test architectureTest`, and `./gradlew integrationTest`)
 - [ ] Static analysis passes (`./gradlew detekt`)
 - [ ] Code coverage meets the minimum threshold (`./gradlew koverVerify`)
 

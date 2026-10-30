@@ -234,22 +234,19 @@ tasks.named("clean") { dependsOn("mdbookClean") }
 ./gradlew test               # unit tests, with mdbook mocked
 ./gradlew architectureTest   # ArchUnit rules for the structure of the plugin
 ./gradlew check              # the above, plus formatting (ktfmt), static analysis (Detekt), and coverage (Kover)
-./gradlew integrationTest    # runs the real mdbook, which has to be on the PATH
+./gradlew integrationTest    # runs the real mdbook
 ```
 
-`test` and `check` need nothing but a JDK. `integrationTest` needs `mdbook` (and a Rust toolchain, for `mdbookTest`),
-and is not part of `check` for that reason.
+`test` and `check` need nothing but a JDK.
 
-If you do not have `mdbook` installed, the build can download it for you. `mdbookDownload` saves the binary for your
-platform to `build/bin`, so add that directory to your `PATH` when running the integration tests:
+`integrationTest` runs the real `mdbook`, and is not part of `check`. It needs network access (to download `mdbook` the
+first time) and a [Rust](https://www.rust-lang.org/tools/install) toolchain on the `PATH`, as `mdbookTest` uses
+`rustdoc` to test the code samples. It is also slower than the other tests.
 
-```shell
-./gradlew mdbookDownload
-PATH="$PWD/build/bin:$PATH" ./gradlew integrationTest
-```
-
-The build pins the version of mdBook that is downloaded, and the GitHub Actions workflow uses the same task, so the
-integration tests run against the same `mdbook` locally and in CI.
+It does not use an `mdbook` you have installed. It depends on the `mdbookDownload` task, which saves a pinned version
+of mdBook for your platform to `build/bin`, and puts that directory at the front of the `PATH` for the tests. The tests
+therefore run against the same `mdbook` locally and in CI. You can run `./gradlew mdbookDownload` on its own to get the
+binary.
 
 <!-- CONTRIBUTING -->
 ## Contributing
