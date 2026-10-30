@@ -19,6 +19,9 @@ val projectName = project.name
 val projectDescription = project.description.orEmpty()
 val repositoryUrl = providers.gradleProperty("repositoryUrl").get()
 
+// Where mdbookDownload saves the mdbook binary
+val mdbookBinDir = layout.buildDirectory.dir("bin")
+
 java {
   toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toInt())) }
   withSourcesJar()
@@ -140,9 +143,13 @@ tasks.register<Test>("architectureTest") {
   shouldRunAfter(tasks.named("test"))
 }
 
-// Integration tests run the real mdbook binary, so they are NOT part of `check`: mdbook must be installed to run them
+// Integration tests run the real mdbook binary. They depend on mdbookDownload and use the mdbook it downloads, rather
+// than whichever mdbook is installed, so they run against the same version everywhere.
+// They are NOT part of `check`, so that `check` only needs a JDK. The integration tests also need network access (to
+// download mdbook the first time), and rustdoc from a Rust toolchain on the PATH for mdbookTest, and they are slower.
+// CI runs them in their own job.
 tasks.register<Test>("integrationTest") {
-  description = "Runs the integration tests against a real mdbook binary (which must be on the PATH)."
+  description = "Runs the integration tests against the mdbook binary downloaded by mdbookDownload."
   group = LifecycleBasePlugin.VERIFICATION_GROUP
   testClassesDirs = sourceSets.test.get().output.classesDirs
   classpath = sourceSets.test.get().runtimeClasspath
@@ -152,6 +159,10 @@ tasks.register<Test>("integrationTest") {
   }
   dependsOn(tasks.named("mdbookDownload"))
   shouldRunAfter(tasks.named("test"), tasks.named("architectureTest"))
+
+  // Ahead of the rest of the PATH, so the downloaded mdbook is the one that is found
+  val path = providers.environmentVariable("PATH").getOrElse("")
+  environment("PATH", "${mdbookBinDir.get().asFile}${File.pathSeparator}$path")
 }
 
 tasks.named("check") { dependsOn(tasks.named("architectureTest")) }
@@ -161,5 +172,5 @@ tasks.register<MdBookDownloadTask>("mdbookDownload") {
   description = "Downloads the mdBook binary for the current platform"
 
   version.set("v0.5.4")
-  binDirectory.set(layout.buildDirectory.dir("bin"))
+  binDirectory.set(mdbookBinDir)
 }
