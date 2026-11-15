@@ -36,7 +36,8 @@ abstract class AbstractMdbookTask(private val execOperations: ExecOperations) : 
     if (!bookTomlExists()) {
       throw GradleException(
           "No $BOOK_TOML found in '${bookDir.get().asFile}'. " +
-              "Run 'mdbookInit' to create a new book, or point mdbook { bookDir } at the directory containing $BOOK_TOML."
+              "Run 'mdbookInit' to create a new book, " +
+              "or point mdbook { bookDir } at the directory containing $BOOK_TOML.",
       )
     }
   }
@@ -47,7 +48,7 @@ abstract class AbstractMdbookTask(private val execOperations: ExecOperations) : 
   protected fun requireNoBookToml() {
     if (bookTomlExists()) {
       throw GradleException(
-          "A $BOOK_TOML already exists in '${bookDir.get().asFile}', refusing to overwrite the existing book."
+          "A $BOOK_TOML already exists in '${bookDir.get().asFile}', refusing to overwrite the existing book.",
       )
     }
   }
