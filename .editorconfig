@@ -8,6 +8,10 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+# Windows batch files
+[*.bat]
+end_of_line = crlf
+
 # Kotlin files
 [*.{kt,kts}]
 # Indentation
