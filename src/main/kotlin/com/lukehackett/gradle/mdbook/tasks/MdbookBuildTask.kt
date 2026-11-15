@@ -21,7 +21,7 @@ import org.gradle.work.DisableCachingByDefault
  */
 @DisableCachingByDefault(
     because =
-        "Rendering depends on the installed mdbook version, so the output is only reused locally (up-to-date checks)"
+        "Rendering depends on the installed mdbook version, so the output is only reused locally (up-to-date checks)",
 )
 abstract class MdbookBuildTask @Inject constructor(execOperations: ExecOperations) :
     AbstractMdbookTask(execOperations) {
